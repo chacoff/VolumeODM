@@ -14,10 +14,12 @@ export default class App{
     constructor(map){
         this.map = map;
 
+        this.iTitle = _('Measurement Object'); 
+
         const measure = L.control.measure({
           labels:{
             measureDistancesAndAreas: _('Measure volume, area and length'),
-            areaMeasurement: _('Measurement'),
+            areaMeasurement: this.iTitle,
             measure: _("Measure"),
             createNewMeasurement: _("Create a new measurement"),
             startCreating: _("Start creating a measurement by adding points to the map"),
@@ -48,7 +50,16 @@ export default class App{
           primaryLengthUnit: 'meters',
           secondaryLengthUnit: 'feet',
           primaryAreaUnit: 'sqmeters',
-          secondaryAreaUnit: 'acres'
+          secondaryAreaUnit: 'acres',
+          // polygon colors
+          activeColor: 'palegreen',
+          completedColor: 'yellow',
+
+          shapeOptions: {
+          color: 'palegreen',
+          fillColor: 'red',
+          fillOpacity: 0.5
+          }
         }).addTo(map);
 
         // measure.options.labels.
@@ -81,6 +92,37 @@ export default class App{
           Utils.saveAs(JSON.stringify(geoJSON, null, 4), "measurements.geojson")
         });
 
+        map.on('measurestart', (e) => {
+          // Prompt for title before measurement starts
+          const title = prompt("Enter a title for this measurement:", "Measurement");
+          this.iTitle = _(title || 'Measurement Object');
+
+          measure.options.labels.areaMeasurement = this.iTitle;
+
+          // const randomColor = getRandomColor();
+
+          // Update the style of existing layers (if necessary)
+          // map.on('measure:drawstart', function (drawEvent) {
+          //   drawEvent.layer.setStyle({
+          //       color: randomColor,
+          //       fillColor: randomColor,
+          //       fillOpacity: 0.5
+          //   });
+          // });
+
+          // Apply new style to any existing layers (if needed)
+          // map.eachLayer(function (layer) {
+          //   if (layer instanceof L.Polygon) {
+          //       layer.setStyle({
+          //           color: randomColor,
+          //           fillColor: randomColor,
+          //           fillOpacity: 0.5
+          //       });
+          //   }
+          // });
+
+        });
+
         map.on('measurepopupshown', ({popupContainer, model, resultFeature}) => {
             // Only modify area popup, length popup is fine as default
             const $container = $("<div/>"),
@@ -90,12 +132,23 @@ export default class App{
               // Erase measurements for area
               $popup.children("p").empty();
             }
+
             $popup.children("ul.tasks").before($container);
 
             ReactDOM.render(<MeasurePopup 
                                 model={model}
                                 resultFeature={resultFeature} 
-                                map={map} />, $container.get(0));
+                                map={map} 
+                                title={this.iTitle}/>, $container.get(0));
         });
     }
+}
+
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
 }

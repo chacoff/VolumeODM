@@ -12,12 +12,15 @@ export default class MeasurePopup extends React.Component {
   static defaultProps = {
     map: {}, 
     model: {},
-    resultFeature: {}
+    resultFeature: {},
+    title: "volume object"
   };
+
   static propTypes = {
     map: PropTypes.object.isRequired,
     model: PropTypes.object.isRequired,
-    resultFeature: PropTypes.object.isRequired
+    resultFeature: PropTypes.object.isRequired,
+    title: PropTypes.string.isRequired
   }
 
   constructor(props){
@@ -35,6 +38,7 @@ export default class MeasurePopup extends React.Component {
         error: "",
         customValue: 0,
         isAbsoluteVolume: false,
+        title: props.title, // title available at this stage
     };
 
     this.exportMeasurement = this.exportMeasurement.bind(this);
@@ -61,7 +65,8 @@ export default class MeasurePopup extends React.Component {
 
     const result = {
       Length: us.length(this.props.model.length).value,
-      Area: us.area(this.props.model.area).value
+      Area: us.area(this.props.model.area).value,
+      Title: this.state.title 
     };
     
     if (this.state.volume !== null && this.state.volume !== false){
@@ -201,7 +206,7 @@ export default class MeasurePopup extends React.Component {
   }
 
   render(){
-    const { volume, error, featureType, baseMethod, customValue, isAbsoluteVolume } = this.state;
+    const { volume, error, featureType, baseMethod, customValue, isAbsoluteVolume, title } = this.state;
     const us = unitSystem();
     this.lastUnitSystem = getUnitSystem();
 
